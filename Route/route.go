@@ -7,4 +7,6 @@ import (
 
 func Routes(e *echo.Echo) {
 	e.POST("/register", Controller.Register)
+	e.POST("/login", Controller.Login)
+
 }

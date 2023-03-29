@@ -28,6 +28,17 @@ func HashPassword(password string) string {
 	return string(bytes)
 }
 
+func VerifyPassword(userPassword string, providedPassword string) (bool, string) {
+	err := bcrypt.CompareHashAndPassword([]byte(providedPassword), []byte(userPassword))
+	check := true
+	msg := ""
+	if err != nil {
+		msg = fmt.Sprintf("login or password is incorrect")
+		check = false
+	}
+	return check, msg
+}
+
 func Register(c echo.Context) error {
 
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -74,4 +85,32 @@ func Register(c echo.Context) error {
 	defer cancel()
 	return c.JSON(http.StatusOK, resultInsertionNumber)
 
+}
+
+func Login(c echo.Context) error {
+	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	var user Model.User
+	var foundUser Model.User
+
+	if err := c.Bind(&user); err != nil {
+		res := c.JSON(http.StatusBadRequest, err.Error())
+		return res
+	}
+
+	err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
+	defer cancel()
+	if err != nil {
+		res := c.JSON(http.StatusInternalServerError, err.Error())
+		return res
+	}
+	passwordIsValid, _ := VerifyPassword(*user.Password, *foundUser.Password)
+	defer cancel()
+	if passwordIsValid != true {
+		res := c.JSON(http.StatusInternalServerError, err.Error())
+		return res
+	}
+
+	token, refreshToken, _ := Helper.GenerateAllTokens(*foundUser.Email, *foundUser.First_name, *foundUser.Last_name, foundUser.User_id)
+	Helper.UpdateAllTokens(token, refreshToken, foundUser.User_id)
+	return c.JSON(http.StatusOK, foundUser)
 }
