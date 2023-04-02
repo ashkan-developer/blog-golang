@@ -66,7 +66,7 @@ func Register(c echo.Context) error {
 	user.Password = &password
 
 	if count > 0 {
-		resp := c.JSON(http.StatusInternalServerError, Helper.ErroLog(http.StatusInternalServerError, " this email or phone number already exists", "EXT_REF"))
+		resp := c.JSON(http.StatusInternalServerError, Helper.ErroLog(http.StatusInternalServerError, " this email number already exists", "EXT_REF"))
 		return resp
 	}
 	user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
@@ -132,4 +132,22 @@ func Users(c echo.Context) error {
 	defer cancel()
 
 	return c.JSON(http.StatusOK, episodes)
+}
+
+func Userfind(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+
+	var user Model.User
+
+	userId := c.Param("user_id")
+	objId, _ := primitive.ObjectIDFromHex(userId)
+
+	err := userCollection.FindOne(ctx, bson.M{"id": objId}).Decode(&user)
+
+	if err != nil {
+		log.Fatal("err")
+	}
+
+	defer cancel()
+	return c.JSON(http.StatusOK, user)
 }
