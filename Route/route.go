@@ -21,6 +21,7 @@ func Routes(e *echo.Echo) {
 	admin.GET("/all-category", Controller.Category_All)
 	admin.POST("/create-category", Controller.Create_category)
 	admin.GET("/category/:title", Controller.Category)
+	admin.PUT("/category/:title", Controller.UpdateCategory)
 	admin.DELETE("/category/:title", Controller.DestroyCategory)
 	//	Api	User	//
 	admin.GET("/users", Controller.Users)

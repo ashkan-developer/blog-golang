@@ -132,3 +132,61 @@ func DestroyCategory(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 
 }
+
+func UpdateCategory(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	//var category Model.Category
+	category_name := c.Param("title")
+	title_new := c.FormValue("title")
+
+	//		file		//
+
+	file, err_file := c.FormFile("image")
+
+	if err_file != nil {
+		log.Fatal("Error file:", err_file)
+	}
+	src, err := file.Open()
+
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	// Destination
+	dst, err := os.Create("Image/" + file.Filename)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	// Copy
+	if _, err = io.Copy(dst, src); err != nil {
+		return err
+	}
+
+	filter := bson.M{"title": category_name}
+
+	// create the update query
+	update := bson.D{
+		{"$set",
+			bson.D{
+				{"title", title_new},
+				{"image", file},
+			},
+		},
+	}
+
+	res, err := categoryCollection.UpdateMany(ctx, filter, update)
+
+	if err != nil {
+		log.Fatal("DeleteOne() ERROR:", err)
+	}
+	if res.UpsertedCount == 0 {
+		fmt.Println("DeleteOne() document not found:", res)
+	}
+
+	defer cancel()
+
+	return c.JSON(http.StatusOK, res)
+}
