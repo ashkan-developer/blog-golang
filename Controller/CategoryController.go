@@ -99,9 +99,9 @@ func Category(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 
 	var category Model.Category
-	userId := c.Param("title")
+	category_name := c.Param("title")
 
-	cursor := categoryCollection.FindOne(ctx, bson.M{"title": userId}).Decode(&category)
+	cursor := categoryCollection.FindOne(ctx, bson.M{"title": category_name}).Decode(&category)
 
 	if cursor != nil {
 		log.Fatal("err")
@@ -109,5 +109,26 @@ func Category(c echo.Context) error {
 
 	defer cancel()
 	return c.JSON(http.StatusOK, category)
+
+}
+
+func DestroyCategory(c echo.Context) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+
+	category_name := c.Param("title")
+
+	res, err := categoryCollection.DeleteOne(ctx, bson.M{"title": category_name})
+
+	if err != nil {
+		log.Fatal("DeleteOne() ERROR:", err)
+	}
+	if res.DeletedCount == 0 {
+		fmt.Println("DeleteOne() document not found:", res)
+	}
+
+	defer cancel()
+
+	return c.JSON(http.StatusOK, res)
 
 }
