@@ -30,4 +30,6 @@ func Routes(e *echo.Echo) {
 
 	//	Api Blog	//
 	admin.GET("/all-blog", Controller.Blog_All)
+	admin.POST("/create-blog", Controller.Create_Blog)
+
 }
