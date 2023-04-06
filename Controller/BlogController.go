@@ -90,3 +90,19 @@ func Create_Blog(c echo.Context) error {
 	defer cancel()
 	return c.JSON(http.StatusOK, resultInsertionNumber)
 }
+
+func Blog(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+
+	var blog Model.Blog
+	blog_name := c.Param("title")
+
+	cursor := categoryCollection.FindOne(ctx, bson.M{"title": blog_name}).Decode(&blog)
+
+	if cursor != nil {
+		log.Fatal("err")
+	}
+
+	defer cancel()
+	return c.JSON(http.StatusOK, blog)
+}
