@@ -17,14 +17,17 @@ func Routes(e *echo.Echo) {
 	//	Api Admin	//
 	admin := e.Group("/admin", Middleware.Authentication)
 
+	//	Api	User	//
+	admin.GET("/users", Controller.Users)
+	admin.GET("/user/:user_id", Controller.Userfind)
+
 	//	Api Category	//
 	admin.GET("/all-category", Controller.Category_All)
 	admin.POST("/create-category", Controller.Create_category)
 	admin.GET("/category/:title", Controller.Category)
 	admin.PUT("/category/:title", Controller.UpdateCategory)
 	admin.DELETE("/category/:title", Controller.DestroyCategory)
-	//	Api	User	//
-	admin.GET("/users", Controller.Users)
-	admin.GET("/user/:user_id", Controller.Userfind)
 
+	//	Api Blog	//
+	admin.GET("/all-blog", Controller.Blog_All)
 }
