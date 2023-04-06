@@ -32,5 +32,6 @@ func Routes(e *echo.Echo) {
 	admin.GET("/all-blog", Controller.Blog_All)
 	admin.POST("/create-blog", Controller.Create_Blog)
 	admin.GET("/blog/:title", Controller.Blog)
+	admin.DELETE("/blog/:title", Controller.DestroyBlog)
 
 }

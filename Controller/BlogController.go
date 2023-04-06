@@ -97,7 +97,7 @@ func Blog(c echo.Context) error {
 	var blog Model.Blog
 	blog_name := c.Param("title")
 
-	cursor := categoryCollection.FindOne(ctx, bson.M{"title": blog_name}).Decode(&blog)
+	cursor := blogCollection.FindOne(ctx, bson.M{"title": blog_name}).Decode(&blog)
 
 	if cursor != nil {
 		log.Fatal("err")
@@ -105,4 +105,23 @@ func Blog(c echo.Context) error {
 
 	defer cancel()
 	return c.JSON(http.StatusOK, blog)
+}
+
+func DestroyBlog(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+
+	blog_name := c.Param("title")
+
+	res, err := blogCollection.DeleteOne(ctx, bson.M{"title": blog_name})
+
+	if err != nil {
+		log.Fatal("DeleteOne() ERROR:", err)
+	}
+	if res.DeletedCount == 0 {
+		fmt.Println("DeleteOne() document not found:", res)
+	}
+
+	defer cancel()
+
+	return c.JSON(http.StatusOK, res)
 }
