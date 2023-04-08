@@ -125,3 +125,65 @@ func DestroyBlog(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, res)
 }
+
+func UpdateBlog(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	//var category Model.Category
+	blog_name := c.Param("title")
+	title_new := c.FormValue("title")
+	introduction_new := c.FormValue("introduction")
+	category_name_new := c.FormValue("category_name")
+
+	//		file		//
+
+	file, err_file := c.FormFile("image")
+
+	if err_file != nil {
+		log.Fatal("Error file:", err_file)
+	}
+	src, err := file.Open()
+
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	// Destination
+	dst, err := os.Create("Image/" + file.Filename)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	// Copy
+	if _, err = io.Copy(dst, src); err != nil {
+		return err
+	}
+
+	filter := bson.M{"title": blog_name}
+
+	// create the update query
+	update := bson.D{
+		{"$set",
+			bson.D{
+				{"title", title_new},
+				{"image", file},
+				{"introduction", introduction_new},
+				{"category_name", category_name_new},
+			},
+		},
+	}
+
+	res, err := blogCollection.UpdateMany(ctx, filter, update)
+
+	if err != nil {
+		log.Fatal("DeleteOne() ERROR:", err)
+	}
+	if res.UpsertedCount == 0 {
+		fmt.Println("DeleteOne() document not found:", res)
+	}
+
+	defer cancel()
+
+	return c.JSON(http.StatusOK, res)
+}
